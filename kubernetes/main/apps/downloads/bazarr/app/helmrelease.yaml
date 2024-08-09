@@ -3,61 +3,43 @@
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
-  name: lldap
+  name: bazarr
 spec:
   interval: 30m
   chart:
     spec:
       chart: app-template
-      version: 3.2.1
+      version: 3.3.2
       interval: 30m
       sourceRef:
         kind: HelmRepository
         name: bjw-s
         namespace: flux-system
+
   values:
     controllers:
-      lldap:
-        replicas: 2
-        strategy: RollingUpdate
-
+      bazarr:
         annotations:
-          secret.reloader.stakater.com/reload: lldap-secret, lldap-db-secret
+          reloader.stakater.com/auto: "true"
 
         pod:
           securityContext:
-            runAsUser: 1000
-            runAsGroup: 1000
+            runAsUser: 2000
+            runAsGroup: 2000
             runAsNonRoot: true
-            fsGroup: 1000
+            fsGroup: 2000
             fsGroupChangePolicy: "OnRootMismatch"
-          topologySpreadConstraints:
-            - maxSkew: 1
-              topologyKey: kubernetes.io/hostname
-              whenUnsatisfiable: DoNotSchedule
-              labelSelector:
-                matchLabels:
-                  app.kubernetes.io/name: lldap
+            supplementalGroups:
+              - 65542 # gladius:external-services
 
         containers:
           app:
             image:
-              repository: ghcr.io/lldap/lldap
-              tag: v0.5.0
-            command:
-              - /app/lldap
-            args:
-              - run
-            env:
-              LLDAP_HTTP_PORT: &port 80
-              LLDAP_HTTP_URL: https://lldap.bjw-s.dev
-              LLDAP_LDAP_PORT: &ldapPort 389
-              LLDAP_LDAP_BASE_DN: dc=bjw-s,dc=dev
+              repository: ghcr.io/onedr0p/bazarr
+              tag: 1.4.3@sha256:d2b70813f7d636fb1ab3448e13ca4074630b63216c6c6d02d034cd5d9e938ea3
             envFrom:
               - secretRef:
-                  name: lldap-secret
-              - secretRef:
-                  name: lldap-db-secret
+                  name: bazarr-secret
             probes:
               liveness: &probes
                 enabled: true
@@ -65,35 +47,31 @@ spec:
                 spec:
                   httpGet:
                     path: /health
-                    port: *port
+                    port: &port 6767
                   initialDelaySeconds: 0
                   periodSeconds: 10
                   timeoutSeconds: 1
                   failureThreshold: 3
               readiness: *probes
-              startup:
-                enabled: true
-                custom: true
-                spec:
-                  httpGet:
-                    path: /health
-                    port: *port
-                  failureThreshold: 30
-                  periodSeconds: 10
             resources:
               requests:
-                cpu: 10m
+                cpu: 15m
+                memory: 256Mi
               limits:
-                memory: 128Mi
+                memory: 512Mi
+            securityContext:
+              allowPrivilegeEscalation: false
+              readOnlyRootFilesystem: true
+              capabilities:
+                drop:
+                  - ALL
 
     service:
       app:
-        controller: lldap
+        controller: bazarr
         ports:
           http:
             port: *port
-          ldap:
-            port: *ldapPort
 
     ingress:
       app:
@@ -101,7 +79,7 @@ spec:
         annotations:
           external-dns.alpha.kubernetes.io/target: ingress-int.bjw-s.dev
         hosts:
-          - host: lldap.bjw-s.dev
+          - host: bazarr.bjw-s.dev
             paths:
               - path: /
                 service:
@@ -109,5 +87,11 @@ spec:
                   port: http
 
     persistence:
-      data:
-        type: emptyDir
+      config:
+        existingClaim: bazarr-config
+      media:
+        type: nfs
+        server: gladius.bjw-s.internal
+        path: /tank/Media
+        globalMounts:
+          - path: /data/nas-media

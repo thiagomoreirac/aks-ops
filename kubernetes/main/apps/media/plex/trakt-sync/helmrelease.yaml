@@ -8,7 +8,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.2.1
+      version: 3.3.2
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -32,17 +32,12 @@ spec:
           app:
             image:
               repository: ghcr.io/taxel/plextraktsync
-              tag: 0.31.4
+              tag: 0.31.7
             args:
               - watch
             env:
               PLEX_BASEURL: http://plex.media.svc.cluster.local:32400
               PLEX_LOCALURL: http://plex.media.svc.cluster.local:32400
-              PLEX_TOKEN:
-                valueFrom:
-                  secretKeyRef:
-                    name: plex-trakt-sync-secret
-                    key: PLEX_TOKEN
               PLEX_USERNAME: bjw_s
               TRAKT_USERNAME: bjw-s
             probes:

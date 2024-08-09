@@ -8,12 +8,10 @@ resources:
   # Flux-Kustomizations
   - ./actual/ks.yaml
   - ./atuin/ks.yaml
-  - ./linkding/ks.yaml
   - ./maker-management-platform/ks.yaml
   - ./miniflux/ks.yaml
   - ./node-red/ks.yaml
   - ./ocis/ks.yaml
   - ./paperless/ks.yaml
   - ./radicale/ks.yaml
-  - ./thelounge/ks.yaml
   - ./wallabag/ks.yaml

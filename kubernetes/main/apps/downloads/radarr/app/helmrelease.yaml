@@ -9,7 +9,7 @@ spec:
   chart:
     spec:
       chart: app-template
-      version: 3.2.1
+      version: 3.3.2
       interval: 30m
       sourceRef:
         kind: HelmRepository
@@ -36,7 +36,7 @@ spec:
           app:
             image:
               repository: ghcr.io/onedr0p/radarr-develop
-              tag: 5.7.0.8882@sha256:d6a11184848cc5309b9c0024cf33b40bb6a3613a5b15613bcc51864b23839015
+              tag: 5.8.3.8933@sha256:da6094f6cc4dc95af194612a8a4d7db4fc27ff4a6e5748c2e6d5dd7be9ed69a7
             env:
               COMPlus_EnableDiagnostics: "0"
               RADARR__INSTANCE_NAME: Radarr
@@ -62,10 +62,10 @@ spec:
                   periodSeconds: 5
             resources:
               requests:
-                cpu: 14m
-                memory: 431M
+                cpu: 20m
+                memory: 384Mi
               limits:
-                memory: 431M
+                memory: 1Gi
             securityContext:
               allowPrivilegeEscalation: false
               readOnlyRootFilesystem: true
@@ -96,6 +96,10 @@ spec:
     persistence:
       config:
         existingClaim: radarr-config
+      add-ons:
+        type: emptyDir
+      tmp:
+        type: emptyDir
       media:
         type: nfs
         server: gladius.bjw-s.internal
