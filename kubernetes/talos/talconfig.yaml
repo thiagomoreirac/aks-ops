@@ -5,9 +5,9 @@ clusterName: &clusterName home-ops
 endpoint: https://k8s.bjw-s.internal:6443
 
 # renovate: depName=ghcr.io/siderolabs/installer datasource=docker
-talosVersion: v1.9.5
+talosVersion: v1.10.1
 # renovate: depName=ghcr.io/siderolabs/kubelet datasource=docker
-kubernetesVersion: v1.32.4
+kubernetesVersion: v1.33.0
 
 additionalApiServerCertSans: &sans
   - k8s.bjw-s.internal
@@ -91,21 +91,11 @@ controlPlane:
 
   schematic:
     customization:
-      extraKernelArgs:
-        - apparmor=0 # Less security, more speed
-        - init_on_alloc=0 # Less security, more speed
-        - init_on_free=0 # Less security, more speed
-        - intel_iommu=on # PCI Passthrough
-        - iommu=pt # PCI Passthrough
-        - mitigations=off # Less security, more speed
-        - security=none # Less security, more speed
-        - net.ifnames=1 # Enable predictable NIC naming
       systemExtensions:
         officialExtensions:
           - siderolabs/gasket-driver
           - siderolabs/i915
           - siderolabs/intel-ucode
-          - siderolabs/mei
           - siderolabs/thunderbolt
 
   patches:
